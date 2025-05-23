@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,7 +49,10 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <c:set var="cartTotal" value="0" />
                             <c:forEach items="${cart.items}" var="item">
+                                <c:set var="itemTotal" value="${item.product.price * item.quantity}" />
+                                <c:set var="cartTotal" value="${cartTotal + itemTotal}" />
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -60,7 +64,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>$${item.product.price}</td>
+                                    <td><fmt:formatNumber value="${item.product.price}" type="currency" currencySymbol="$"/></td>
                                     <td>
                                         <form action="${pageContext.request.contextPath}/cart/update" method="post" 
                                               class="d-flex align-items-center">
@@ -71,7 +75,7 @@
                                             <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
                                         </form>
                                     </td>
-                                    <td>$${item.product.price * item.quantity}</td>
+                                    <td><fmt:formatNumber value="${itemTotal}" type="currency" currencySymbol="$"/></td>
                                     <td>
                                         <form action="${pageContext.request.contextPath}/cart/remove" method="post" 
                                               class="d-inline">
@@ -85,11 +89,7 @@
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                <td>
-                                    <strong>
-                                        $${cart.items.stream().map(item -> item.product.price * item.quantity).sum()}
-                                    </strong>
-                                </td>
+                                <td><strong><fmt:formatNumber value="${cartTotal}" type="currency" currencySymbol="$"/></strong></td>
                                 <td></td>
                             </tr>
                         </tfoot>

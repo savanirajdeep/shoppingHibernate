@@ -4,7 +4,6 @@ import com.shopping.model.Product;
 import com.shopping.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 import java.util.List;
 
