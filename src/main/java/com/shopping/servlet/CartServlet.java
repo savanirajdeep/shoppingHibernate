@@ -45,6 +45,8 @@ public class CartServlet extends HttpServlet {
             removeFromCart(request, response);
         } else if ("/update".equals(action)) {
             updateCartItem(request, response);
+        } else if ("/checkout".equals(action)) {
+            checkout(request, response);
         }
     }
 
@@ -73,7 +75,7 @@ public class CartServlet extends HttpServlet {
             // Handle invalid input
         }
         
-        response.sendRedirect(request.getContextPath() + "/cart");
+        response.sendRedirect(request.getContextPath() + "/products");
     }
 
     private void removeFromCart(HttpServletRequest request, HttpServletResponse response) 
@@ -117,5 +119,43 @@ public class CartServlet extends HttpServlet {
         }
         
         response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private void checkout(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Cart cart = (Cart) session.getAttribute("cart");
+        
+        if (cart != null && !cart.getItems().isEmpty()) {
+            try {
+                // Update stock quantities for each item in the cart
+                for (CartItem item : cart.getItems()) {
+                    Product product = item.getProduct();
+                    int newStock = product.getStockQuantity() - item.getQuantity();
+                    
+                    // Ensure we don't go below 0 stock
+                    if (newStock >= 0) {
+                        product.setStockQuantity(newStock);
+                        productDAO.updateProduct(product);
+                    } else {
+                        // Handle insufficient stock error
+                        response.sendRedirect(request.getContextPath() + "/cart?error=insufficientStock");
+                        return;
+                    }
+                }
+                
+                // Clear the cart after successful stock update
+                cart.getItems().clear();
+                session.setAttribute("cart", cart);
+                
+                // Redirect back to cart page with success parameter
+                response.sendRedirect(request.getContextPath() + "/cart?orderPlaced=true");
+            } catch (Exception e) {
+                // Handle any errors during the checkout process
+                response.sendRedirect(request.getContextPath() + "/cart?error=checkoutFailed");
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/cart");
+        }
     }
 } 

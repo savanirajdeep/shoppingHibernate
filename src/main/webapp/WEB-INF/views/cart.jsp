@@ -30,6 +30,18 @@
     <div class="container mt-4">
         <h1 class="mb-4">Shopping Cart</h1>
         
+        <c:if test="${param.error == 'insufficientStock'}">
+            <div class="alert alert-danger">
+                Sorry, some items in your cart are no longer available in the requested quantity. Please update your cart and try again.
+            </div>
+        </c:if>
+        
+        <c:if test="${param.error == 'checkoutFailed'}">
+            <div class="alert alert-danger">
+                There was an error processing your order. Please try again later.
+            </div>
+        </c:if>
+        
         <c:choose>
             <c:when test="${empty cart.items}">
                 <div class="alert alert-info">
@@ -100,7 +112,7 @@
                     <a href="${pageContext.request.contextPath}/products" class="btn btn-outline-primary">
                         Continue Shopping
                     </a>
-                    <button class="btn btn-success" onclick="alert('Checkout functionality to be implemented')">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#checkoutModal">
                         Proceed to Checkout
                     </button>
                 </div>
@@ -108,6 +120,53 @@
         </c:choose>
     </div>
 
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkoutModalLabel">Confirm Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to place this order?</p>
+                    <p>Total Amount: <strong><fmt:formatNumber value="${cartTotal}" type="currency" currencySymbol="$"/></strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="${pageContext.request.contextPath}/cart/checkout" method="post" id="checkoutForm">
+                        <button type="submit" class="btn btn-success">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Order Placed Successfully!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your order has been placed successfully. Thank you for shopping with us!</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="${pageContext.request.contextPath}/products" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show success modal if order was placed
+        if (window.location.search.includes('orderPlaced=true')) {
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        }
+    </script>
 </body>
 </html> 
